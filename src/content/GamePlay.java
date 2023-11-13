@@ -88,12 +88,14 @@ public class GamePlay {
 		    }
 		}
 
-		// 敵の表示
+        // 敵の処理
 		gra.setColor(Color.RED);
 		for (int i = 0; i < enemyList.size(); i++) {
 		    Enemy enemy = enemyList.get(i);
-		    gra.fillRect(enemy.x + 10, enemy.y, 10, 10);
-		    gra.fillRect(enemy.x, enemy.y - 10, 30, 10);
+
+            // 敵の表示
+            enemy.show();
+
 		    enemy.y += 3;
 		    if (enemy.y > 500) {
 		        enemyList.remove(i);
@@ -114,7 +116,7 @@ public class GamePlay {
 
 		// 敵の追加
 		if (random.nextInt(rateEnemyGenerate) == 1) {
-		    enemyList.add(new Enemy(random.nextInt(470), 0));
+		    enemyList.add(new Enemy(gra, random.nextInt(470), 0));
 		} 
 
 		// 敵の弾の表示
@@ -195,7 +197,7 @@ public class GamePlay {
 		    rateEnemyGenerate = level < 10 ? 90 - (level * 8): 10;
 		}
     }
-    
+
     public void inputKey () {
 		// プレイヤー移動
 		if (Keyboard.isKeyPressed(KeyEvent.VK_LEFT)) {
