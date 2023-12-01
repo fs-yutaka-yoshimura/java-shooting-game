@@ -10,11 +10,14 @@ import java.awt.event.KeyEvent;
 
 import base.Keyboard;
 import enums.EnumBulletType;
+import enums.EnumObjectType;
 import enums.EnumScreen;
 
 public class GamePlay {
 
     private Graphics gra;
+	private Random random;
+
 	private int bulletIntraval;
 	private int score;
 	private int level;
@@ -31,6 +34,7 @@ public class GamePlay {
 	// コンストラクタ
 	public GamePlay (Graphics gra) {
 		this.gra = gra;
+		this.random = new Random();
 	}
 
     public void init() {
@@ -50,110 +54,61 @@ public class GamePlay {
     }
 
     public void main () {
-        Random random = new Random();
-
-
-		// プレイヤーの弾の処理
-		// 敵の弾の処理
-		// プレイヤーの処理
-		// 敵の処理
-
 		// プレイヤーの弾の表示
 		for (int i = 0; i < playerBulletList.size(); i++) {
-		    gra.setColor(new Color(0, 0, 255));
 		    Bullet bullet = playerBulletList.get(i);
-			
-		    // ログの追加
-		    bullet.addLog(bullet.x, bullet.y);
-
-		    // 実態表示
-		    gra.fillOval(bullet.x - 2, bullet.y,10, 10);
-
-		    // 残像表示
-		    for (int j = 0; j < bullet.xLog.size(); j++) {
-		        gra.setColor(new Color(0, 0, 255, j * 30));
-		        gra.fillOval(bullet.xLog.get(j) - 2, bullet.yLog.get(j), 10, 10);
-		    }
-
-		    // 弾の移動
-		    bullet.y -= 10;
+			bullet.move();
 
 		    // 弾の削除
-		    if (bullet.y < 0) {
+		    if (isOutsideDisplayArea(bullet.x, bullet.y)) {
 		        playerBulletList.remove(i);
 		    }
 
 		    // 敵に弾が当たった時の処理
 		    for (int j = 0; j < enemyList.size(); j++) {
 		        Enemy enemy = enemyList.get(j);
-		        if (bullet.x >= enemy.x && bullet.x <= enemy.x + 30
-		            && bullet.y >= enemy.y && bullet.y <= enemy.y + 20) {
+		        if (isHitPlayerBullet(bullet, enemy)) {
 		                enemyList.remove(j);
-		                score += 10;
+						addScore();
 		        }
 		    }
 		}
-		
+
         // 敵の処理
-		gra.setColor(Color.RED);
 		for (int i = 0; i < enemyList.size(); i++) {
 		    Enemy enemy = enemyList.get(i);
+			enemy.move();
 
-            // 敵の表示
-            enemy.show();
-
-		    enemy.y += 3;
-		    if (enemy.y > 500) {
+			// 敵の削除
+		    if (isOutsideDisplayArea(enemy.x, enemy.y)) {
 		        enemyList.remove(i);
 		    }
 
-		    // 敵の弾発射
-		    if (random.nextInt(rateEnemyBulletGenerate) == 1) {
-		        enemyBulletList.add(new Bullet(enemy.x, enemy.y, player.x, player.y, EnumBulletType.SHIP_AIM));
+		    if (isAddEnemyBullet()) {
+				addEnemyBullet(enemy);
 		    }
 
-		    // 自機と敵が衝突した時の処理
-		    if (enemy.x >= player.x && enemy.x <= player.x + 30
-		        && enemy.y >= player.y && enemy.y <= player.y + 20) {
-		        isGameOverFlg = true;
-		        score += level * 100;
+		    if (isHitEnemey(enemy)) {
+				setStateGameOver();
 		    }
 		}
 
-		// 敵の追加
-		if (random.nextInt(rateEnemyGenerate) == 1) {
-		    enemyList.add(new Enemy(gra, random.nextInt(470), 0));
+		if (isAddEnemy()) {
+		    enemyList.add(new Enemy(gra, random.nextInt(470), 0, 0, 3));
 		} 
 
-		// 敵の弾の表示
 		for (int i = 0; i < enemyBulletList.size(); i++) {
 		    Bullet enemyBullet = enemyBulletList.get(i);
-		    gra.fillRect(enemyBullet.x + 12, enemyBullet.y, 5, 5);
-
-		    // 敵の弾移動
-		    switch (enemyBullet.type) {
-		        case SHIP_AIM:
-		            enemyBullet.x += enemyBullet.moveX;
-		            enemyBullet.y += enemyBullet.moveY;
-		            break;
-		        case TRACKING:
-		            break;
-		        default:
-		            enemyBullet.y += 10;
-		            break;
-		    }
-
-		    if (enemyBullet.y > 500) {
+			enemyBullet.move();
+		    if (isOutsideDisplayArea(enemyBullet.x, enemyBullet.y)) {
 		        enemyBulletList.remove(i);
 		    }
 
 		    // 自機に弾が当たった時の処理
-		    if (enemyBullet.x >= player.x && enemyBullet.x <= player.x + 30
-		        && enemyBullet.y >= player.y && enemyBullet.y <= player.y + 20) {
-		        isGameOverFlg = true;
+		    if (isHitEnemeyBullet(enemyBullet)) {
+				setStateGameOver();
 		    }
 		}
-
         return;
 	}
 
@@ -161,8 +116,23 @@ public class GamePlay {
         // プレイヤー表示
 		player.show();
 
-		// 敵の表示
-		// TODO:敵の表示
+		// プレイヤーの弾の表示
+		for (int i = 0; i < playerBulletList.size(); i++) {
+		    Bullet bullet = playerBulletList.get(i);
+			bullet.show();
+		}
+
+        // 敵の表示
+		for (int i = 0; i < enemyList.size(); i++) {
+		    Enemy enemy = enemyList.get(i);
+            enemy.show();
+		}
+
+		// 敵の弾の表示
+		for (int i = 0; i < enemyBulletList.size(); i++) {
+		    Bullet enemyBullet = enemyBulletList.get(i);
+			enemyBullet.show();
+		}
 
 		// UI表示
 		this.showUserIntercase();
@@ -201,8 +171,9 @@ public class GamePlay {
 		// プレイヤーショット
 		if (Keyboard.isKeyPressed(KeyEvent.VK_SPACE)) {
 		    if (bulletIntraval == 0) {
-		        playerBulletList.add(new Bullet(player.x + 12, player.y));
-		        bulletIntraval = 5;
+		        playerBulletList.add(new Bullet(gra, player.x + 12, player.y,
+					 0, -5, EnumObjectType.OBJ_TYPE_PLAYER));
+		        bulletIntraval = 10;
 		    }
 		}
 		if (bulletIntraval > 0) {
@@ -211,6 +182,43 @@ public class GamePlay {
 
 		player.inputKey();
     }
+
+	public boolean isAddEnemy() {
+		return random.nextInt(rateEnemyGenerate) == 1;
+	}
+
+	public boolean isAddEnemyBullet() {
+		return random.nextInt(rateEnemyBulletGenerate) == 1;
+	}
+
+	public boolean isHitPlayerBullet(Bullet bullet, Enemy enemy) {
+		return bullet.x >= enemy.x && bullet.x <= enemy.x + 30
+			 && bullet.y >= enemy.y && bullet.y <= enemy.y + 20;
+	}
+
+	private void addScore() {
+		score += 10;
+	}
+
+	private void addEnemyBullet(Enemy enemy) {
+		EnumBulletType bulletType = EnumBulletType.values()[new Random().nextInt(EnumBulletType.values().length)];
+		enemyBulletList.add(new Bullet(gra, enemy.x, enemy.y, player.x, player.y, EnumObjectType.OBJ_TYPE_ENEMY, bulletType));	
+	}
+
+	public boolean isHitEnemey(Enemy enemy) {
+		return enemy.x >= player.x && enemy.x <= player.x + 30
+			 && enemy.y >= player.y && enemy.y <= player.y + 20;
+	}
+
+	public boolean isHitEnemeyBullet(Bullet bullet) {
+		return bullet.x >= player.x && bullet.x <= player.x + 30
+			 && bullet.y >= player.y && bullet.y <= player.y + 20; 
+	}
+
+	private void setStateGameOver() {
+		isGameOverFlg = true;
+		score += level * 100;
+	}
 
     public int getScore () {
         return score;
@@ -224,4 +232,8 @@ public class GamePlay {
         }
         return EnumScreen.GAME_PLAY;
     }
+
+	public boolean isOutsideDisplayArea(int x, int y) {
+		return x < -50 || x > 550 || y < -50 || y > 550; 
+	}
 }

@@ -3,16 +3,26 @@ package content;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Enemy extends Bullet {
+public class Enemy {
     private Graphics gra;
     public int x, y;
+    public int moveX, moveY;
     
-    public Enemy(Graphics gra) {}
+    public Enemy(Graphics gra) {
+        this.gra = gra;
+    }
 
-    public Enemy(Graphics gra, int x, int y) {
+    public Enemy(Graphics gra, int x, int y, int moveX, int moveY) {
         this.gra = gra;
         this.x = x;
         this.y = y;
+        this.moveX = moveX;
+        this.moveY = moveY;
+    }
+
+    public void move() {
+        x += moveX;
+        y += moveY;
     }
 
     public void show() {
