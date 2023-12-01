@@ -1,9 +1,7 @@
+package content;
 import java.awt.*;
 
 import base.Frame;
-import content.GameOver;
-import content.GamePlay;
-import content.GameTitle;
 import enums.EnumScreen;
 
 public class GameMain {
@@ -13,33 +11,21 @@ public class GameMain {
     public static void  gameMain() {
         // フレーム生成
         frame = new Frame();
-        loop = true;
-
         Graphics gra = frame.panel.image.getGraphics();
 
-        // FPS
-        long startTime;
-        long fpsTime = 0;
-        int fpsRate = 30;
-        int fpsValue = 0;
-        int fpsCount = 0;
-        
-        EnumScreen screen = EnumScreen.GAME_TITLE;
-
+        FpsManager fpsManager = new FpsManager(gra);
         GameTitle title = new GameTitle(gra);
         GamePlay gamePlay = new GamePlay(gra);
         GameOver gameOver = new GameOver(gra);
         
+        EnumScreen screen = EnumScreen.GAME_TITLE;
+        loop = true;
         while (loop) {
-            if ((System.currentTimeMillis() - fpsTime) >= 1000) {
-                fpsTime = System.currentTimeMillis();
-                fpsValue = fpsCount;
-                fpsCount = 0;
-            }
-            fpsCount++;
+            fpsManager.resetFpsInfo();
+            fpsManager.upCount();
+            fpsManager.setStartTime();
 
-            startTime = System.currentTimeMillis();
-
+            // スクリーンを白塗り
             gra.setColor(Color.WHITE);
             gra.fillRect(0, 0, 500, 500);
 
@@ -53,8 +39,8 @@ public class GameMain {
                     if (gamePlay.isInit) {
                         gamePlay.init();
                     }
+                    gamePlay.main();
                     gamePlay.show();
-                    gamePlay.showPlayer();
                     gamePlay.showUserIntercase();
                     gamePlay.lavelUp();
                     gamePlay.inputKey();
@@ -68,21 +54,13 @@ public class GameMain {
             }
 
             // FSPの表示
-            gra.setColor(Color.BLACK);
-            gra.setFont(new Font("SansSerif", Font.PLAIN, 15));
-            gra.drawString("FPS:" + fpsValue, 5, 20);
+            fpsManager.showFpsValue();
 
             // スクリーンに反映
             frame.panel.draw();
 
-            try {
-                long runTime = System.currentTimeMillis() - startTime;
-                if (runTime < (1000 / fpsRate)) {
-                    Thread.sleep((1000 / fpsRate) - (runTime));
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            // スリープ処理
+            fpsManager.sleep();
         }
     }
 }

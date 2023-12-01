@@ -3,7 +3,7 @@ package content;
 import java.awt.Color;
 import java.awt.Graphics;
 
-public class Enemy {
+public class Enemy extends Bullet {
     private Graphics gra;
     public int x, y;
     

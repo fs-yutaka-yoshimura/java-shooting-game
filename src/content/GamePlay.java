@@ -15,8 +15,6 @@ import enums.EnumScreen;
 public class GamePlay {
 
     private Graphics gra;
-	private int playerX;
-    private int playerY;
 	private int bulletIntraval;
 	private int score;
 	private int level;
@@ -28,6 +26,7 @@ public class GamePlay {
 	private ArrayList<Bullet> enemyBulletList;
     public boolean isInit = true;
     private boolean isGameOverFlg = false;
+	private Player player;
 
 	// コンストラクタ
 	public GamePlay (Graphics gra) {
@@ -35,8 +34,6 @@ public class GamePlay {
 	}
 
     public void init() {
-        playerX = 235;
-        playerY = 430;
         bulletIntraval = 0;
         score = 0;
         level = 1;
@@ -47,16 +44,25 @@ public class GamePlay {
         enemyList = new ArrayList<>();
         enemyBulletList = new ArrayList<>();
         isInit = false;
+
+		player = new Player(gra);
+		player.init();
     }
 
-    public void show () {
+    public void main () {
         Random random = new Random();
+
+
+		// プレイヤーの弾の処理
+		// 敵の弾の処理
+		// プレイヤーの処理
+		// 敵の処理
 
 		// プレイヤーの弾の表示
 		for (int i = 0; i < playerBulletList.size(); i++) {
 		    gra.setColor(new Color(0, 0, 255));
 		    Bullet bullet = playerBulletList.get(i);
-
+			
 		    // ログの追加
 		    bullet.addLog(bullet.x, bullet.y);
 
@@ -87,7 +93,7 @@ public class GamePlay {
 		        }
 		    }
 		}
-
+		
         // 敵の処理
 		gra.setColor(Color.RED);
 		for (int i = 0; i < enemyList.size(); i++) {
@@ -103,12 +109,12 @@ public class GamePlay {
 
 		    // 敵の弾発射
 		    if (random.nextInt(rateEnemyBulletGenerate) == 1) {
-		        enemyBulletList.add(new Bullet(enemy.x, enemy.y, playerX, playerY, EnumBulletType.SHIP_AIM));
+		        enemyBulletList.add(new Bullet(enemy.x, enemy.y, player.x, player.y, EnumBulletType.SHIP_AIM));
 		    }
 
 		    // 自機と敵が衝突した時の処理
-		    if (enemy.x >= playerX && enemy.x <= playerX + 30
-		        && enemy.y >= playerY && enemy.y <= playerY + 20) {
+		    if (enemy.x >= player.x && enemy.x <= player.x + 30
+		        && enemy.y >= player.y && enemy.y <= player.y + 20) {
 		        isGameOverFlg = true;
 		        score += level * 100;
 		    }
@@ -142,31 +148,24 @@ public class GamePlay {
 		    }
 
 		    // 自機に弾が当たった時の処理
-		    if (enemyBullet.x >= playerX && enemyBullet.x <= playerX + 30
-		        && enemyBullet.y >= playerY && enemyBullet.y <= playerY + 20) {
+		    if (enemyBullet.x >= player.x && enemyBullet.x <= player.x + 30
+		        && enemyBullet.y >= player.y && enemyBullet.y <= player.y + 20) {
 		        isGameOverFlg = true;
 		    }
-		}
-
-		// プレイヤーショット
-		if (Keyboard.isKeyPressed(KeyEvent.VK_SPACE)) {
-		    if (bulletIntraval == 0) {
-		        playerBulletList.add(new Bullet(playerX + 12, playerY));
-		        bulletIntraval = 5;
-		    }
-		}
-		if (bulletIntraval > 0) {
-		    bulletIntraval--;
 		}
 
         return;
 	}
 
-    public void showPlayer() {
-        // プレイヤー初期表示
-		gra.setColor(Color.BLUE);
-		gra.fillRect(playerX + 10, playerY , 10, 10);
-		gra.fillRect(playerX, playerY + 10, 30, 10);
+    public void show() {
+        // プレイヤー表示
+		player.show();
+
+		// 敵の表示
+		// TODO:敵の表示
+
+		// UI表示
+		this.showUserIntercase();
     }
     
     public void showUserIntercase () {
@@ -199,27 +198,18 @@ public class GamePlay {
     }
 
     public void inputKey () {
-		// プレイヤー移動
-		if (Keyboard.isKeyPressed(KeyEvent.VK_LEFT)) {
-		    if (playerX > 0) {
-		        playerX -= 5;
+		// プレイヤーショット
+		if (Keyboard.isKeyPressed(KeyEvent.VK_SPACE)) {
+		    if (bulletIntraval == 0) {
+		        playerBulletList.add(new Bullet(player.x + 12, player.y));
+		        bulletIntraval = 5;
 		    }
 		}
-		if (Keyboard.isKeyPressed(KeyEvent.VK_RIGHT)) {
-		    if (playerX < 460) {
-		        playerX += 5;
-		    }
+		if (bulletIntraval > 0) {
+		    bulletIntraval--;
 		}
-		if (Keyboard.isKeyPressed(KeyEvent.VK_UP)) {
-		    if (playerY > 0) {
-		        playerY -= 5;
-		    }
-		}
-		if (Keyboard.isKeyPressed(KeyEvent.VK_DOWN)) {
-		    if (playerY < 445) {
-		        playerY += 5;
-		    }
-		}
+
+		player.inputKey();
     }
 
     public int getScore () {
