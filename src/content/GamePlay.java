@@ -88,7 +88,7 @@ public class GamePlay {
 				addEnemyBullet(enemy);
 		    }
 
-		    if (isHitEnemey(enemy)) {
+		    if (isHitEnemeyToPlayer(enemy)) {
 				setStateGameOver();
 		    }
 		}
@@ -105,7 +105,7 @@ public class GamePlay {
 		    }
 
 		    // 自機に弾が当たった時の処理
-		    if (isHitEnemeyBullet(enemyBullet)) {
+		    if (isHitEnemeyBulletToPlayer(enemyBullet)) {
 				setStateGameOver();
 		    }
 		}
@@ -171,8 +171,10 @@ public class GamePlay {
 		// プレイヤーショット
 		if (Keyboard.isKeyPressed(KeyEvent.VK_SPACE)) {
 		    if (bulletIntraval == 0) {
-		        playerBulletList.add(new Bullet(gra, player.x + 12, player.y,
-					 0, -5, EnumObjectType.OBJ_TYPE_PLAYER));
+		        playerBulletList.add(
+					new Bullet(
+						gra, player.x + (player.width / 2) - 5,
+						player.y, 0, -5, EnumObjectType.OBJ_TYPE_PLAYER));
 		        bulletIntraval = 10;
 		    }
 		}
@@ -202,17 +204,21 @@ public class GamePlay {
 
 	private void addEnemyBullet(Enemy enemy) {
 		EnumBulletType bulletType = EnumBulletType.values()[new Random().nextInt(EnumBulletType.values().length)];
-		enemyBulletList.add(new Bullet(gra, enemy.x, enemy.y, player.x, player.y, EnumObjectType.OBJ_TYPE_ENEMY, bulletType));	
+		enemyBulletList.add(new Bullet(gra, enemy.x + (enemy.width / 2) - 5, enemy.y + enemy.height, player.x, player.y, EnumObjectType.OBJ_TYPE_ENEMY, bulletType));	
 	}
 
-	public boolean isHitEnemey(Enemy enemy) {
+	public boolean isHitEnemeyToPlayer(Enemy enemy) {
+        // gra.setColor(Color.BLUE);
+		// gra.fillRect(x + 10, y , 10, 10);
+		// gra.fillRect(x, y + 10, 30, 10);
+		
 		return enemy.x >= player.x && enemy.x <= player.x + 30
 			 && enemy.y >= player.y && enemy.y <= player.y + 20;
 	}
 
-	public boolean isHitEnemeyBullet(Bullet bullet) {
-		return bullet.x >= player.x && bullet.x <= player.x + 30
-			 && bullet.y >= player.y && bullet.y <= player.y + 20; 
+	public boolean isHitEnemeyBulletToPlayer(Bullet bullet) {
+		return isHit(player.x, player.y, player.width, player.height, player.hitSize,
+			 bullet.x, bullet.y, bullet.width, bullet.height, bullet.hitSize);
 	}
 
 	private void setStateGameOver() {
@@ -235,5 +241,17 @@ public class GamePlay {
 
 	public boolean isOutsideDisplayArea(int x, int y) {
 		return x < -50 || x > 550 || y < -50 || y > 550; 
+	}
+
+	public boolean isHit(int obj1_x, int obj1_y, int obj1_width, int obj1_height, int obj1_hitSize,
+		int obj2_x, int obj2_y, int obj2_width, int obj2_height, int obj2_hitSize) {
+		int hitBox1_x = obj1_x + (obj1_width / 2) - obj1_hitSize;
+		int hitBox1_y = obj1_y + (obj1_height / 2) - obj1_hitSize;
+		int hitBox2_x = obj2_x + (obj2_width / 2) - obj2_hitSize;
+		int hitBox2_y = obj2_y + (obj2_height / 2) - obj2_hitSize;
+		if (hitBox1_x >= hitBox2_x && hitBox1_x <= hitBox2_x + (obj2_hitSize * 2) && hitBox1_y >= hitBox2_y && hitBox1_y <= hitBox2_y + (obj2_hitSize * 2)) {
+			return true;
+		}
+		return false;
 	}
 }

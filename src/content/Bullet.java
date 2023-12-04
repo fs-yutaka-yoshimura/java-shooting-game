@@ -10,6 +10,9 @@ public class Bullet {
     private Graphics gra;
     
     public int x, y;
+    public int width;
+    public int height;
+    public int hitSize;
     public int moveX, moveY;
     public EnumObjectType objectType;
     public EnumBulletType bulletType;
@@ -24,6 +27,9 @@ public class Bullet {
         this.gra = gra;
         this.x = x;
         this.y = y;
+        this.width = 10;
+        this.height = 10;
+        this.hitSize = 5;
         this.moveX = moveX;
         this.moveY = moveY;
         this.objectType = objectType;
@@ -36,6 +42,9 @@ public class Bullet {
         this.gra = gra;
         this.x = x;
         this.y = y;
+        this.width = 10;
+        this.height = 10;
+        this.hitSize = 5;
         this.moveX = 0;
         this.moveY = 0;
         this.objectType = objectType;
@@ -95,7 +104,7 @@ public class Bullet {
                 break;
         }
 	    // 実態表示
-	    gra.fillOval(x - 2, y,10, 10);
+	    gra.fillOval(x, y, width, height);
 
 	    // 残像表示
 	    for (int j = 0; j < xLog.size(); j++) {
@@ -109,7 +118,12 @@ public class Bullet {
                 default:
                     break;
             }
-	        gra.fillOval(xLog.get(j) - 2, yLog.get(j), 10, 10);
+	        gra.fillOval(xLog.get(j), yLog.get(j), width, height);
 	    }
+
+        // 当たり判定
+        // gra.setColor(Color.GREEN);
+        gra.setColor(new Color(0, 255, 0, 120));
+		gra.fillRect(x + (width / 2) - hitSize, y + (height / 2) - hitSize, hitSize * 2, hitSize * 2);
     }
 }

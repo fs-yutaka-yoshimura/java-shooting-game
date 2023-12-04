@@ -3,7 +3,12 @@ package content;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 import base.Keyboard;
 
@@ -12,10 +17,14 @@ public class Player implements ICharacter, IAttackable {
 
 	public int x;
     public int y;
+    public int width;
+    public int height;
+    public int hitSize;
 	public int bulletIntraval;
 	public ArrayList<Bullet> playerBulletList;
     public boolean isDead;
     public boolean isInit;
+    public BufferedImage bufferedImage;
 
 	// コンストラクタ
 	public Player (Graphics gra) {
@@ -25,15 +34,28 @@ public class Player implements ICharacter, IAttackable {
     public void init() {
         x = 235;
         y = 430;
+        hitSize = 10;
         bulletIntraval = 0;
         playerBulletList = new ArrayList<>();
         isInit = false;
+        try {
+            bufferedImage = ImageIO.read(new File("src\\image\\player_small.png"));
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        width = bufferedImage.getWidth();
+        height = bufferedImage.getHeight();
     }
 
     public void show () {
-        gra.setColor(Color.BLUE);
-		gra.fillRect(x + 10, y , 10, 10);
-		gra.fillRect(x, y + 10, 30, 10);
+        // 描画
+		// gra.fillRect(x, y + 10, 30, 10);
+        gra.drawImage(bufferedImage, x, y, null);
+
+        // 当たり判定
+        // gra.setColor(Color.GREEN);
+        gra.setColor(new Color(0, 255, 0, 120));
+		gra.fillRect(x + (width / 2) - hitSize, y + (height / 2) - hitSize, hitSize * 2, hitSize * 2);
     }
 
     public void inputKey() {
